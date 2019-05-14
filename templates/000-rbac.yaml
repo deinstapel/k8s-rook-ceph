@@ -1,0 +1,141 @@
+# This file contains all rbac rules.
+
+# This is developed against k8s 1.14.1 and rook 1.0.0
+
+# Allow the Rook Operator in its namespace (rook-ceph-system) 
+# to interact with pods and resource in this clusters namespace
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rook-ceph-cluster-mgmt
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: rook-ceph-system
+  namespace: {{ .Values.operator.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rook-ceph-cluster-mgmt
+
+---
+
+# Define the Service account and permissions for the rook-ceph-osd
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:  rook-ceph-osd
+  namespace: {{ .Release.Namespace }}
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rook-ceph-osd
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - "configmaps"
+    verbs:
+    - "get"
+    - "list"
+    - "watch"
+    - "create"
+    - "update"
+    - "delete"
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rook-ceph-osd
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: rook-ceph-osd
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rook-ceph-osd
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:  rook-ceph-mgr
+  namespace: {{ .Release.Namespace }}
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rook-ceph-mgr-system
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: rook-ceph-mgr
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rook-ceph-mgr-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rook-ceph-mgr
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - ceph.rook.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rook-ceph-mgr
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: rook-ceph-mgr
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rook-ceph-mgr

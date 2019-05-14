@@ -1,0 +1,42 @@
+# This file contains a storage cluster over the HDD servers.
+# In this case, it should contain only node2.deinstapel.de
+
+# This is developed against k8s 1.14.1 and rook 1.0.0
+
+######################################
+# Ceph-Cluster                       #
+######################################
+
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  # The path on the host where configuration files will be persisted. If not specified, a kubernetes emptyDir will be created (not recommended).
+  # Important: if you reinstall the cluster, make sure you delete this directory from each host or else the mons will fail to start on the new cluster.
+  # In Minikube, the '/data' directory is configured to persist across reboots. Use "/data/rook" in Minikube environment.
+  dataDirHostPath: /var/lib/rook/{{ .Release.Name }}
+  mon:
+    # set the amount of mons to be started
+    # in our case, since we only have one server, one monitor is sufficient.
+    # if we choose to upgrade the storage cluster, at least **three** mons should be chosen to guarantee a good quorum.
+    count: {{ .Values.storage.monCount }}
+    allowMultiplePerNode: true
+  # no dashboard
+  dashboard:
+    enabled: false
+  network:
+    # since we want to run multiple different storage classes, we can't use hostNetwork: true here.
+    hostNetwork: false
+  storage:
+    # cluster level storage configuration and selection
+    # we want to specify the devices/host paths explicitly, to ensure no data will be erased by accident.
+    useAllNodes: false
+    useAllDevices: false
+    deviceFilter:
+    location:
+    nodes: {{ toYaml .Values.storage.nodes | nindent 4 }}
+    config:
+      databaseSizeMB: "1024" # this value can be removed for environments with normal sized disks (100 GB or larger)
+      journalSizeMB: "1024"  # this value can be removed for environments with normal sized disks (20 GB or larger)

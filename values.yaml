@@ -1,0 +1,14 @@
+storage:
+  monCount: 1
+  replicaCount: 1
+  fileSystem: "xfs"
+  failureDomain: "osd"
+
+  nodes:
+  - name: "node3.deinstapel.de"
+    directories:
+    - path: "/data/data1"
+
+operator:
+  namespace: "rook-ceph-system"
+
