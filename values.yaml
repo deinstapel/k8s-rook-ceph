@@ -10,5 +10,5 @@ storage:
     - path: "/data/data1"
 
 operator:
-  namespace: "rook-ceph-system"
+  namespace: "storage-ceph-operator"
 
