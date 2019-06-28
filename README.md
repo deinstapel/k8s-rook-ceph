@@ -18,7 +18,7 @@ storage:
   failureDomain: "osd" # Replication Mode 
 
   nodes: # https://github.com/rook/rook/blob/master/Documentation/ceph-cluster-crd.md#node-settings
-  - name: "node3.deinstapel.de"
+  - name: "node3"
     directories:
     - path: "/data/data1"
 
